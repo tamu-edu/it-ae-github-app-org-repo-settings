@@ -3,7 +3,7 @@ module.exports.handler = async (event, context) => {
     const obj = JSON.parse(event.body);
     console.log(obj)
 
-    const reponse = {
+    const response = {
         statusCode: 200,
         body: JSON.stringify('Repository ' + obj.action)
     };
