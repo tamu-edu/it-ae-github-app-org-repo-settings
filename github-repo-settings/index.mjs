@@ -1,11 +1,11 @@
 import { Octokit } from "octokit";
 import { createAppAuth } from "@octokit/auth-app";
+import {
+  SecretsManagerClient,
+  GetSecretValueCommand,
+} from "@aws-sdk/client-secrets-manager";
 
 export const handler = async (event, context) => {
-  // console.log('Received event: ' + JSON.stringify(event, null, 2));
-  // const { Octokit } = require("@octokit/core");
-  // const { createAppAuth } = require("@octokit/auth-app");
-
   const githubEvent = event.headers["x-github-event"];
   if (githubEvent === "repository") {
     const data = JSON.parse(event.body);
@@ -19,17 +19,36 @@ export const handler = async (event, context) => {
 
       const appId = process.env.APP_ID;
       const webhookSecret = process.env.WEBHOOK_SECRET;
-      const privateKey = process.env.PRIVATE_KEY;
+      // const privateKey = process.env.PRIVATE_KEY;
 
-      // console.log("App ID: " + appId);
-      // console.log("Webhook Secret: " + webhookSecret);
-      // console.log("Private Key: " + privateKey);
+      // Retrieve the private key from AWS Secrets Manager
+      const secret_name = "test/github-repo-settings/PRIVATE_KEY";
+
+      const client = new SecretsManagerClient({
+        region: "us-east-2",
+      });
+
+      let response;
+
+      try {
+        response = await client.send(
+          new GetSecretValueCommand({
+            SecretId: secret_name,
+            VersionStage: "AWSCURRENT",
+          })
+        );
+      } catch (error) {
+        throw error;
+      }
+
+      const secret = response.SecretString;
+      /////////////////////////////////////////////////
 
       const appOctokit = new Octokit({
         authStrategy: createAppAuth,
         auth: {
           appId: appId,
-          privateKey: privateKey,
+          privateKey: secret,
           clientId: "Iv1.1389af67aba6167e",
           clientSecret: "7d552329c5e4eeb37326c993c69a913622a43daf",
           installationId: 123,
