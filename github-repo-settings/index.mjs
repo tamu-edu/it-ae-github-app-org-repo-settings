@@ -104,7 +104,6 @@ export const handler = async (event, context) => {
         },
       });
 
-      const requestString = `PUT /orgs/${data.organization.login}/teams/repo-settings-team/repos/${data.repository.full_name}`;
       try {
         const octokit = await appOctokit.getInstallationOctokit(
           data.installation.id
@@ -112,16 +111,19 @@ export const handler = async (event, context) => {
         console.log("Authenticated with octokit " + data.installation.id);
         // await octokit.request("");
 
-        await octokit.request(requestString, {
-          org: data.organization.login,
-          team_slug: "repo-settings-team",
-          owner: data.organization.login,
-          repo: data.repository.name,
-          permission: "maintain",
-          headers: {
-            "X-GitHub-Api-Version": "2022-11-28",
-          },
-        });
+        await octokit.request(
+          "PUT /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}",
+          {
+            org: data.organization.login,
+            team_slug: "repo-settings-team",
+            owner: data.organization.login,
+            repo: data.repository.name,
+            permission: "maintain",
+            headers: {
+              "X-GitHub-Api-Version": "2022-11-28",
+            },
+          }
+        );
       } catch (error) {
         if (error.response) {
           console.error(
@@ -133,13 +135,16 @@ export const handler = async (event, context) => {
       }
     }
   } else {
-    console.log(
-      "Received an event that is not a repository event: " + githubEvent
-    );
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message:
+          "Received an event that is not a repository event: " + githubEvent,
+      }),
+    };
   }
 
-  const response = {
+  return {
     statusCode: 200,
   };
-  return response;
 };
