@@ -4,9 +4,11 @@ import {
   SecretsManagerClient,
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
+import { App } from "octokit";
 
 export const handler = async (event, context) => {
   const githubEvent = event.headers["x-github-event"];
+  console.log(event);
   if (githubEvent === "repository") {
     const data = JSON.parse(event.body);
     console.log("GitHub payload: " + JSON.stringify(data, null, 2));
@@ -16,10 +18,6 @@ export const handler = async (event, context) => {
       console.log(
         "A repository was created with this name: " + data.repository.name
       );
-
-      // const appId = process.env.APP_ID;
-      // const webhookSecret = process.env.WEBHOOK_SECRET;
-      // const privateKey = process.env.PRIVATE_KEY;
 
       // Retrieve the private key from AWS Secrets Manager
       const client = new SecretsManagerClient({
@@ -88,27 +86,38 @@ export const handler = async (event, context) => {
       // const appId = response.SecretString;
       /////////////////////////////////////////////////
 
-      const appOctokit = new Octokit({
-        authStrategy: createAppAuth,
-        auth: {
-          appId: appId,
-          privateKey: privateKey,
-          clientId: clientId,
-          clientSecret: clientSecret,
-          installationId: 43330184,
+      // const appOctokit = new Octokit({
+      //   authStrategy: createAppAuth,
+      //   auth: {
+      //     appId: appId,
+      //     privateKey: privateKey,
+      //     clientId: clientId,
+      //     clientSecret: clientSecret,
+      //     installationId: 43330184,
+      //   },
+      // });
+      const appOctokit = new App({
+        appId: appId,
+        privateKey: privateKey,
+        webhooks: {
+          secret: webhookSecret,
         },
       });
 
+      const requestString = `PUT /orgs/${data.organization.login}/teams/repo-settings-team/repos/${data.repository.full_name}`;
       try {
-        const requestString = `PUT /orgs/${data.organization.login}/teams/repo-settings-team/repos/${data.repository.full_name}}`;
-        // const { slug } = await appOctokit.request("GET /user");
-        // console.log("authenticated as %s", slug);
-        const { slug } = await appOctokit.request(requestString, {
+        const octokit = await appOctokit.getInstallationOctokit(
+          data.installation.id
+        );
+        console.log("Authenticated with octokit " + data.installation.id);
+        // await octokit.request("");
+
+        await octokit.request(requestString, {
           org: data.organization.login,
           team_slug: "repo-settings-team",
           owner: data.organization.login,
           repo: data.repository.name,
-          permission: "admin",
+          permission: "maintain",
           headers: {
             "X-GitHub-Api-Version": "2022-11-28",
           },
@@ -118,8 +127,8 @@ export const handler = async (event, context) => {
           console.error(
             `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
           );
+          console.error(error);
         }
-        console.error(error);
         throw error;
       }
     }

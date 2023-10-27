@@ -1,7 +1,7 @@
 variable "aws_region" {
   description = "value of the AWS region"
 
-  default = "us-east-1"
+  default = "us-east-2"
 }
 
 variable "lambda_bucket_name" {

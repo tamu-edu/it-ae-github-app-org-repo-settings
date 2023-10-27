@@ -10,3 +10,5 @@ https://docs.github.com/en/webhooks/webhook-events-and-payloads#create
 https://docs.github.com/en/webhooks/using-webhooks/creating-webhooks#creating-an-organization-webhook
 
 https://docs.github.com/en/rest/repos?apiVersion=2022-11-28
+
+https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation
