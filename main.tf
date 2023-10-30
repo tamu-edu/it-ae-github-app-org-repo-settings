@@ -46,6 +46,8 @@ resource "aws_lambda_function" "github_repo_settings" {
   source_code_hash = data.archive_file.lambda_github_app.output_base64sha256
 
   role = aws_iam_role.iam_for_lambda.arn
+
+  timeout = "60"
 }
 
 data "aws_iam_policy_document" "assume_role" {

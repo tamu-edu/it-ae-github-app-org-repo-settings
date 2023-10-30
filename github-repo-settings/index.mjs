@@ -9,17 +9,16 @@ import { App } from "octokit";
 export const handler = async (event, context) => {
   const githubEvent = event.headers["x-github-event"];
   console.log(event);
-  if (githubEvent === "pull_request") {
+  if (githubEvent === "repository") {
     const data = JSON.parse(event.body);
     console.log("GitHub payload: " + JSON.stringify(data, null, 2));
 
     const action = data.action;
-    if (action === "opened") {
-      // console.log(
-      //   "A repository was created with this name: " + data.repository.name
-      // );
+    if (action === "created") {
+      console.log(
+        "A repository was created with this name: " + data.repository.name
+      );
 
-      console.log("Pull request opened on: " + data.repository.name);
       // Retrieve the private key from AWS Secrets Manager
       const client = new SecretsManagerClient({
         region: "us-east-2",
@@ -30,7 +29,6 @@ export const handler = async (event, context) => {
       let webhookSecret;
       let clientId;
       let clientSecret;
-      // const secret_name = "test/github-repo-settings/PRIVATE_KEY";
 
       try {
         response = await client.send(
@@ -71,32 +69,8 @@ export const handler = async (event, context) => {
       } catch (error) {
         throw error;
       }
-      // const privateKey = response.SecretString;
-
-      // secret_name = "test/github-repo-settings/PRIVATE_KEY";
-      // try {
-      //   response = await client.send(
-      //     new GetSecretValueCommand({
-      //       SecretId: secret_name,
-      //       VersionStage: "AWSCURRENT",
-      //     })
-      //   );
-      // } catch (error) {
-      //   throw error;
-      // }
-      // const appId = response.SecretString;
       /////////////////////////////////////////////////
 
-      // const appOctokit = new Octokit({
-      //   authStrategy: createAppAuth,
-      //   auth: {
-      //     appId: appId,
-      //     privateKey: privateKey,
-      //     clientId: clientId,
-      //     clientSecret: clientSecret,
-      //     installationId: 43330184,
-      //   },
-      // });
       const appOctokit = new App({
         appId: appId,
         privateKey: privateKey,
@@ -106,37 +80,35 @@ export const handler = async (event, context) => {
       });
 
       try {
-        // const octokit = await appOctokit.getInstallationOctokit(
-        //   data.installation.id
-        // );
-        // console.log("Authenticated with octokit " + data.installation.id);
-        // await octokit.request("");
+        const octokit = await appOctokit.getInstallationOctokit(
+          data.installation.id
+        );
+        console.log("Authenticated with octokit " + data.installation.id);
 
-        // await octokit.request(
-        //   "PUT /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}",
-        //   {
-        //     org: data.organization.login,
-        //     team_slug: "repo-settings-team",
-        //     owner: data.organization.login,
-        //     repo: data.repository.name,
-        //     permission: "maintain",
-        //     headers: {
-        //       "X-GitHub-Api-Version": "2022-11-28",
-        //     },
-        //   }
-        // );
-        await octokit.request(
-          "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
+        const team = await octokit.request(
+          "GET /orgs/{org}/teams/{team_slug}",
           {
-            owner: data.repository.owner.login,
-            repo: data.repository.name,
-            issue_number: data.pull_request.number,
-            body: "Hello from GitHub Lambda!",
+            org: data.organization.login,
+            team_slug: "repo-settings-team",
             headers: {
-              "x-github-api-version": "2022-11-28",
+              "X-GitHub-Api-Version": "2022-11-28",
             },
           }
         );
+        console.log(JSON.stringify(team, null, 2));
+
+        const route =
+          "PUT /organizations/{org_id}/team/{team_id}/repos/{owner}/{repo}";
+        await octokit.request(route, {
+          org_id: data.organization.id,
+          team_id: team.data.id,
+          owner: data.organization.login,
+          repo: data.repository.name,
+          permission: "maintain",
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+        });
       } catch (error) {
         if (error.response) {
           console.error(
