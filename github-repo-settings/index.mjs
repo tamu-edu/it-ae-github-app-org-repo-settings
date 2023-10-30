@@ -9,16 +9,17 @@ import { App } from "octokit";
 export const handler = async (event, context) => {
   const githubEvent = event.headers["x-github-event"];
   console.log(event);
-  if (githubEvent === "repository") {
+  if (githubEvent === "pull_request") {
     const data = JSON.parse(event.body);
     console.log("GitHub payload: " + JSON.stringify(data, null, 2));
 
     const action = data.action;
-    if (action === "created") {
-      console.log(
-        "A repository was created with this name: " + data.repository.name
-      );
+    if (action === "opened") {
+      // console.log(
+      //   "A repository was created with this name: " + data.repository.name
+      // );
 
+      console.log("Pull request opened on: " + data.repository.name);
       // Retrieve the private key from AWS Secrets Manager
       const client = new SecretsManagerClient({
         region: "us-east-2",
@@ -105,22 +106,34 @@ export const handler = async (event, context) => {
       });
 
       try {
-        const octokit = await appOctokit.getInstallationOctokit(
-          data.installation.id
-        );
-        console.log("Authenticated with octokit " + data.installation.id);
+        // const octokit = await appOctokit.getInstallationOctokit(
+        //   data.installation.id
+        // );
+        // console.log("Authenticated with octokit " + data.installation.id);
         // await octokit.request("");
 
+        // await octokit.request(
+        //   "PUT /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}",
+        //   {
+        //     org: data.organization.login,
+        //     team_slug: "repo-settings-team",
+        //     owner: data.organization.login,
+        //     repo: data.repository.name,
+        //     permission: "maintain",
+        //     headers: {
+        //       "X-GitHub-Api-Version": "2022-11-28",
+        //     },
+        //   }
+        // );
         await octokit.request(
-          "PUT /orgs/{org}/teams/{team_slug}/repos/{owner}/{repo}",
+          "POST /repos/{owner}/{repo}/issues/{issue_number}/comments",
           {
-            org: data.organization.login,
-            team_slug: "repo-settings-team",
-            owner: data.organization.login,
+            owner: data.repository.owner.login,
             repo: data.repository.name,
-            permission: "maintain",
+            issue_number: data.pull_request.number,
+            body: "Hello from GitHub Lambda!",
             headers: {
-              "X-GitHub-Api-Version": "2022-11-28",
+              "x-github-api-version": "2022-11-28",
             },
           }
         );
