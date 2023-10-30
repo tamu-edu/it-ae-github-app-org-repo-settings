@@ -85,23 +85,11 @@ export const handler = async (event, context) => {
         );
         console.log("Authenticated with octokit " + data.installation.id);
 
-        const team = await octokit.request(
-          "GET /orgs/{org}/teams/{team_slug}",
-          {
-            org: data.organization.login,
-            team_slug: "repo-settings-team",
-            headers: {
-              "X-GitHub-Api-Version": "2022-11-28",
-            },
-          }
-        );
-        console.log(JSON.stringify(team, null, 2));
-
         const route =
           "PUT /organizations/{org_id}/team/{team_id}/repos/{owner}/{repo}";
         await octokit.request(route, {
           org_id: data.organization.id,
-          team_id: team.data.id,
+          team_id: 8808531,
           owner: data.organization.login,
           repo: data.repository.name,
           permission: "maintain",
