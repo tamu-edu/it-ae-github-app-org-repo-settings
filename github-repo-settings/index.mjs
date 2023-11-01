@@ -1,5 +1,3 @@
-import { Octokit } from "octokit";
-import { createAppAuth } from "@octokit/auth-app";
 import {
   SecretsManagerClient,
   GetSecretValueCommand,
@@ -27,8 +25,6 @@ export const handler = async (event, context) => {
       let privateKey;
       let appId;
       let webhookSecret;
-      let clientId;
-      let clientSecret;
 
       try {
         response = await client.send(
@@ -52,20 +48,6 @@ export const handler = async (event, context) => {
           })
         );
         webhookSecret = response.SecretString;
-        response = await client.send(
-          new GetSecretValueCommand({
-            SecretId: "test/github-repo-settings/CLIENT_ID",
-            VersionStage: "AWSCURRENT",
-          })
-        );
-        clientId = response.SecretString;
-        response = await client.send(
-          new GetSecretValueCommand({
-            SecretId: "test/github-repo-settings/CLIENT_SECRET",
-            VersionStage: "AWSCURRENT",
-          })
-        );
-        clientSecret = response.SecretString;
       } catch (error) {
         throw error;
       }
@@ -119,5 +101,9 @@ export const handler = async (event, context) => {
 
   return {
     statusCode: 200,
+    body: JSON.stringify({
+      message:
+        "Updated team permissions for repository: " + data.repository.name,
+    }),
   };
 };
