@@ -4,7 +4,7 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { App } from "octokit";
 
-export const handler = async (event, context) => {
+export const handler = async (event) => {
   console.log(event);
 
   const githubEvent = event.headers["x-github-event"];
