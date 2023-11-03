@@ -5,19 +5,19 @@ import {
 import { App } from "octokit";
 
 export const handler = async (event, context) => {
-  const githubEvent = event.headers["x-github-event"];
   console.log(event);
+
+  const githubEvent = event.headers["x-github-event"];
   if (githubEvent === "repository") {
     const data = JSON.parse(event.body);
     console.log("GitHub payload: " + JSON.stringify(data, null, 2));
 
-    const action = data.action;
-    if (action === "created") {
+    if (data.action === "created") {
       console.log(
         "A repository was created with this name: " + data.repository.name
       );
 
-      // Retrieve the private key from AWS Secrets Manager
+      // Retrieve the secrets from AWS Secrets Manager
       const client = new SecretsManagerClient({
         region: "us-east-2",
       });
