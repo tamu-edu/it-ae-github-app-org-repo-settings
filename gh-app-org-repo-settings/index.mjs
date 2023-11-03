@@ -5,6 +5,9 @@ import {
 import { App } from "octokit";
 
 export const handler = async (event) => {
+  const teamRepos = new Map();
+  teamRepos.set(/^it-ae-.*/, "repo-settings-team");
+
   console.log(event);
 
   const githubEvent = event.headers["x-github-event"];
@@ -16,6 +19,9 @@ export const handler = async (event) => {
       console.log(
         "A repository was created with this name: " + data.repository.name
       );
+      if (teamRepos.get(data.repository.name) === undefined) {
+        return { statusCode: 200 };
+      }
 
       // Retrieve the secrets from AWS Secrets Manager
       const client = new SecretsManagerClient({
@@ -67,16 +73,16 @@ export const handler = async (event) => {
         );
         console.log("Authenticated with octokit " + data.installation.id);
 
-        // const teamId = await retrieveTeamId(
-        //   octokit,
-        //   data.organization.login,
-        //   "repo-settings-team"
-        // );
+        const teamId = await retrieveTeamId(
+          octokit,
+          data.organization.login,
+          teamRepos.get(data.repository.name)
+        );
         const route =
           "PUT /organizations/{org_id}/team/{team_id}/repos/{owner}/{repo}";
         await octokit.request(route, {
           org_id: data.organization.id,
-          team_id: 8808531,
+          team_id: teamId,
           owner: data.organization.login,
           repo: data.repository.name,
           permission: "maintain",
@@ -117,11 +123,11 @@ export const handler = async (event) => {
   };
 };
 
-// const retrieveTeamId = async (octokit, org, teamSlug) => {
-//   const route = "GET /orgs/{org}/teams/{team_slug}";
-//   const response = await octokit.request(route, {
-//     org: org,
-//     team_slug: teamSlug,
-//   });
-//   return response.data.id;
-// };
+const retrieveTeamId = async (octokit, org, teamSlug) => {
+  const route = "GET /orgs/{org}/teams/{team_slug}";
+  const response = await octokit.request(route, {
+    org: org,
+    team_slug: teamSlug,
+  });
+  return response.data.id;
+};
