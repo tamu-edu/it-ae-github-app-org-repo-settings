@@ -12,7 +12,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-2"
+  region = var.aws_region
 }
 
 resource "aws_s3_bucket" "lambda_bucket" {
@@ -21,21 +21,21 @@ resource "aws_s3_bucket" "lambda_bucket" {
 
 data "archive_file" "lambda_github_app" {
   type        = "zip"
-  source_dir  = "${path.module}/github-repo-settings"
-  output_path = "${path.module}/github-repo-settings.zip"
+  source_dir  = "${path.module}/${var.lambda_function_name}}"
+  output_path = "${path.module}/${var.lambda_function_name}.zip"
 }
 
 resource "aws_s3_object" "lambda_github_app" {
   bucket = aws_s3_bucket.lambda_bucket.id
 
-  key    = "github-repo-settings.zip"
+  key    = "${var.lambda_function_name}.zip"
   source = data.archive_file.lambda_github_app.output_path
 
   etag = filemd5(data.archive_file.lambda_github_app.output_path)
 }
 
 resource "aws_lambda_function" "github_repo_settings" {
-  function_name = "github-repo-settings"
+  function_name = var.lambda_function_name
 
   s3_bucket = aws_s3_bucket.lambda_bucket.id
   s3_key    = aws_s3_object.lambda_github_app.key
@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
-  name               = "iam_for_lambda"
+  name               = var.lambda_iam_role_name
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
