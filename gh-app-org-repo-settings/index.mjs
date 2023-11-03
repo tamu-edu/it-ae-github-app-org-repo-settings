@@ -67,6 +67,11 @@ export const handler = async (event) => {
         );
         console.log("Authenticated with octokit " + data.installation.id);
 
+        // const teamId = await retrieveTeamId(
+        //   octokit,
+        //   data.organization.login,
+        //   "repo-settings-team"
+        // );
         const route =
           "PUT /organizations/{org_id}/team/{team_id}/repos/{owner}/{repo}";
         await octokit.request(route, {
@@ -88,6 +93,14 @@ export const handler = async (event) => {
         }
         throw error;
       }
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          message:
+            "Updated team permissions for repository: " + data.repository.name,
+        }),
+      };
     }
   } else {
     return {
@@ -101,9 +114,14 @@ export const handler = async (event) => {
 
   return {
     statusCode: 200,
-    body: JSON.stringify({
-      message:
-        "Updated team permissions for repository: " + data.repository.name,
-    }),
   };
 };
+
+// const retrieveTeamId = async (octokit, org, teamSlug) => {
+//   const route = "GET /orgs/{org}/teams/{team_slug}";
+//   const response = await octokit.request(route, {
+//     org: org,
+//     team_slug: teamSlug,
+//   });
+//   return response.data.id;
+// };

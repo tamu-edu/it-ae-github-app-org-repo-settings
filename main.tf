@@ -16,12 +16,13 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "lambda_bucket" {
-  bucket = var.lambda_bucket_name
+  bucket        = var.lambda_bucket_name
+  force_destroy = true
 }
 
 data "archive_file" "lambda_github_app" {
   type        = "zip"
-  source_dir  = "${path.module}/${var.lambda_function_name}}"
+  source_dir  = "${path.module}/${var.lambda_function_name}"
   output_path = "${path.module}/${var.lambda_function_name}.zip"
 }
 
