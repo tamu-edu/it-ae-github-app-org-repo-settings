@@ -4,10 +4,11 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { App } from "octokit";
 
-export const handler = async (event) => {
-  const teamRepos = new Map();
-  teamRepos.set(/^it-ae-.*/, "repo-settings-team");
+const teamRepos = new Map([
+  [/^it-ae-.*/, { teamSlug: "repo-settings-team", permission: "maintain" }],
+]);
 
+export const handler = async (event) => {
   console.log(event);
 
   const githubEvent = event.headers["x-github-event"];
@@ -19,8 +20,29 @@ export const handler = async (event) => {
       console.log(
         "A repository was created with this name: " + data.repository.name
       );
-      if (teamRepos.get(data.repository.name) === undefined) {
-        return { statusCode: 200 };
+
+      let teamTemplate = null;
+      for (const [key, value] of teamRepos.entries()) {
+        if (key.test(data.repository.name)) {
+          teamTemplate = value;
+          break;
+        }
+      }
+
+      if (teamTemplate === null) {
+        console.log("There is no template for the named repo");
+        return {
+          statusCode: 200,
+          body: JSON.stringify({
+            message:
+              "This repository name does not have a template: " +
+              data.repository.name,
+          }),
+        };
+      } else {
+        console.log(
+          "A template exists for this repo name: " + teamTemplate.teamSlug
+        );
       }
 
       // Retrieve the secrets from AWS Secrets Manager
@@ -76,8 +98,9 @@ export const handler = async (event) => {
         const teamId = await retrieveTeamId(
           octokit,
           data.organization.login,
-          teamRepos.get(data.repository.name)
+          teamTemplate.teamSlug
         );
+
         const route =
           "PUT /organizations/{org_id}/team/{team_id}/repos/{owner}/{repo}";
         await octokit.request(route, {
@@ -85,18 +108,13 @@ export const handler = async (event) => {
           team_id: teamId,
           owner: data.organization.login,
           repo: data.repository.name,
-          permission: "maintain",
+          permission: teamTemplate.permission,
           headers: {
             "X-GitHub-Api-Version": "2022-11-28",
           },
         });
       } catch (error) {
-        if (error.response) {
-          console.error(
-            `Error! Status: ${error.response.status}. Message: ${error.response.data.message}`
-          );
-          console.error(error);
-        }
+        console.error(error);
         throw error;
       }
 
