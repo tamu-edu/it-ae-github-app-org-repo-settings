@@ -1,0 +1,10 @@
+{
+    "/^it-ae-.*/": {
+        "access": [
+            {
+                "teamSlug": "repo-settings-team",
+                "permission": "maintain"
+            }
+        ]
+    }
+}
