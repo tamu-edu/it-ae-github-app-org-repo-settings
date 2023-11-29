@@ -4,9 +4,11 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { App } from "octokit";
 
-const teamRepos = new Map([
-  [/^it-ae-.*/, { teamSlug: "repo-settings-team", permission: "maintain" }],
-]);
+// const teamRepos = new Map([
+// [/^it-ae-.*/, { teamSlug: "repo-settings-team", permission: "maintain" }],
+// ]);
+// const teamRepos = require("./repo-settings.json");
+import teamRepos from "./repo_settings.json" assert { type: "json" };
 
 export const handler = async (event) => {
   console.log(event);
@@ -22,12 +24,32 @@ export const handler = async (event) => {
       );
 
       let teamTemplate = null;
-      for (const [key, value] of teamRepos.entries()) {
-        if (key.test(data.repository.name)) {
-          teamTemplate = value;
+      // for (const [key, value] of teamRepos.entries()) {
+      //   if (key.test(data.repository.name)) {
+      //     teamTemplate = value;
+      //     break;
+      //   }
+      // }
+      console.log("teamRepos: " + JSON.stringify(teamRepos, null, 2));
+      console.log("teamRepos.length: " + teamRepos.length);
+      for (var regexString in teamRepos) {
+        const regex = new RegExp(regexString);
+        console.log("regex: " + regex);
+        if (regex.test(data.repository.name)) {
+          teamTemplate = teamRepos[regexString].access[0];
+          console.log("teamTemplate: " + teamTemplate);
           break;
         }
       }
+      // for (var i = 0; i < teamRepos.length; i++) {
+      //   const regex = new RegExp(teamRepos[i]);
+      //   console.log("regex: " + regex);
+      //   if (regex.test(data.repository.name)) {
+      //     teamTemplate = teamRepos[i].access;
+      //     console.log("teamTemplate: " + teamTemplate);
+      //     break;
+      //   }
+      // }
 
       if (teamTemplate === null) {
         console.log("There is no template for the named repo");
@@ -40,9 +62,11 @@ export const handler = async (event) => {
           }),
         };
       } else {
-        console.log(
-          "A template exists for this repo name: " + teamTemplate.teamSlug
-        );
+        let s = "";
+        for (var i = 0; i < teamTemplate.length; i++) {
+          s += teamTemplate[i].teamSlug + "\n";
+        }
+        console.log("A template exists for this repo name: " + s);
       }
 
       // Retrieve the secrets from AWS Secrets Manager
