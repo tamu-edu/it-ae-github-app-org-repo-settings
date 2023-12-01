@@ -63,13 +63,13 @@ export const handler = async (event) => {
         /////////////////////////////////////////////////
 
         // Retrieve the template file from Github
-        const regexTemplate = await retrieveTemplate(
+        const regexTemplates = await retrieveTemplate(
           octokit,
           data.organization.login,
           "org-settings",
           "repo_settings/repo_settings.json"
         );
-        console.log("Retrieved template file from Github");
+        console.log("regexTemplates: " + JSON.stringify(regexTemplates));
         /////////////////////////////////////////////////
 
         // Parse the template file for matches
@@ -144,14 +144,19 @@ export const handler = async (event) => {
 };
 
 const retrieveTemplate = async (octokit, owner, repo, path) => {
-  const route = "GET /repos/{owner}/{repo}/contents/{path}";
-  const response = await octokit.request(route, {
-    owner: owner,
-    repo: repo,
-    path: path,
-  });
-  console.log("response: " + JSON.stringify(response, null, 2));
-  return response.content;
+  try {
+    const route = "GET /repos/{owner}/{repo}/contents/{path}";
+    const response = await octokit.request(route, {
+      owner: owner,
+      repo: repo,
+      path: path,
+    });
+    console.log("response: " + JSON.stringify(response, null, 2));
+    return response.content;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
 };
 
 const retrieveTeamId = async (octokit, org, teamSlug) => {
