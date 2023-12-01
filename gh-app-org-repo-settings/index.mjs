@@ -3,7 +3,7 @@ import {
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
 import { App } from "octokit";
-import regexTemplates from "./repo_settings.json";
+// import regexTemplates from "./repo_settings.json";
 
 export const handler = async (event) => {
   try {
@@ -19,6 +19,60 @@ export const handler = async (event) => {
           "A repository was created with this name: " + data.repository.name
         );
 
+        // Retrieve the secrets from AWS Secrets Manager
+        const client = new SecretsManagerClient({
+          region: "us-east-2",
+        });
+        let response;
+
+        response = await client.send(
+          new GetSecretValueCommand({
+            SecretId: "test/github-repo-settings/PRIVATE_KEY",
+            VersionStage: "AWSCURRENT",
+          })
+        );
+        const privateKey = response.SecretString;
+        response = await client.send(
+          new GetSecretValueCommand({
+            SecretId: "test/github-repo-settings/APP_ID",
+            VersionStage: "AWSCURRENT",
+          })
+        );
+        const appId = response.SecretString;
+        response = await client.send(
+          new GetSecretValueCommand({
+            SecretId: "test/github-repo-settings/WEBHOOK_SECRET",
+            VersionStage: "AWSCURRENT",
+          })
+        );
+        const webhookSecret = response.SecretString;
+        /////////////////////////////////////////////////
+
+        // Authenticate with Github
+        const appOctokit = new App({
+          appId: appId,
+          privateKey: privateKey,
+          webhooks: {
+            secret: webhookSecret,
+          },
+        });
+        const octokit = await appOctokit.getInstallationOctokit(
+          data.installation.id
+        );
+        console.log("Authenticated with octokit " + data.installation.id);
+        /////////////////////////////////////////////////
+
+        // Retrieve the template file from Github
+        const regexTemplate = await retrieveTemplate(
+          octokit,
+          data.organization.login,
+          "org-settings",
+          "repo_settings/repo_settings.json"
+        );
+        console.log("Retrieved template file from Github");
+        /////////////////////////////////////////////////
+
+        // Parse the template file for matches
         let repoTemplate = null;
         let grantAccessTeams = null;
         console.log(
@@ -50,48 +104,9 @@ export const handler = async (event) => {
         } else {
           console.log("A template exists for this repo name");
         }
-
-        // Retrieve the secrets from AWS Secrets Manager
-        const client = new SecretsManagerClient({
-          region: "us-east-2",
-        });
-        let response;
-
-        response = await client.send(
-          new GetSecretValueCommand({
-            SecretId: "test/github-repo-settings/PRIVATE_KEY",
-            VersionStage: "AWSCURRENT",
-          })
-        );
-        const privateKey = response.SecretString;
-        response = await client.send(
-          new GetSecretValueCommand({
-            SecretId: "test/github-repo-settings/APP_ID",
-            VersionStage: "AWSCURRENT",
-          })
-        );
-        const appId = response.SecretString;
-        response = await client.send(
-          new GetSecretValueCommand({
-            SecretId: "test/github-repo-settings/WEBHOOK_SECRET",
-            VersionStage: "AWSCURRENT",
-          })
-        );
-        const webhookSecret = response.SecretString;
         /////////////////////////////////////////////////
 
-        const appOctokit = new App({
-          appId: appId,
-          privateKey: privateKey,
-          webhooks: {
-            secret: webhookSecret,
-          },
-        });
-        const octokit = await appOctokit.getInstallationOctokit(
-          data.installation.id
-        );
-        console.log("Authenticated with octokit " + data.installation.id);
-
+        // Add the teams to the repo
         await updateTeamPermissions(
           octokit,
           data.organization,
@@ -126,6 +141,17 @@ export const handler = async (event) => {
     console.error(error);
     throw error;
   }
+};
+
+const retrieveTemplate = async (octokit, owner, repo, path) => {
+  const route = "GET /repos/{owner}/{repo}/contents/{path}";
+  const response = await octokit.request(route, {
+    owner: owner,
+    repo: repo,
+    path: path,
+  });
+  console.log("response: " + JSON.stringify(response, null, 2));
+  return response.content;
 };
 
 const retrieveTeamId = async (octokit, org, teamSlug) => {
