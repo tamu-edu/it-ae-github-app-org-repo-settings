@@ -4,7 +4,8 @@
             {
                 "teamSlug": "repo-settings-team",
                 "permission": "maintain"
-            }, {
+            }, 
+            {
                 "teamSlug": "repo-test-team-2",
                 "permission": "admin"
             }
