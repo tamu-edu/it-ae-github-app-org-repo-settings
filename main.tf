@@ -20,6 +20,36 @@ resource "aws_s3_bucket" "lambda_bucket" {
   force_destroy = true
 }
 
+resource "aws_s3_bucket_acl" "lambda_bucket" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+  acl    = "private"
+}
+
+resource "aws_s3_bucket_versioning" "lambda_bucket" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+  versioning_configuration {
+    status = "Disabled"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "lambda_bucket" {
+  bucket                  = aws_s3_bucket.lambda_bucket.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
+  bucket = aws_s3_bucket.lambda_bucket.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "aws:kms"
+    }
+  }
+}
+
 data "archive_file" "lambda_github_app" {
   type        = "zip"
   source_dir  = "${path.module}/${var.lambda_function_name}"
