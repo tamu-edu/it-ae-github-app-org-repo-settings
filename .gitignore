@@ -36,3 +36,5 @@ terraform.rc
 */node_modules
 
 gh-app-org-repo-settings.zip
+
+.terraform

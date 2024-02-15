@@ -9,6 +9,13 @@ terraform {
       version = "~> 2.0"
     }
   }
+
+  backend "s3" {
+    bucket         = "terraform-state-529455156359"
+    key            = "terraform.tfstate"
+    dynamodb_table = "terraform-state-529455156359"
+    region         = "us-east-2"
+  }
 }
 
 provider "aws" {
@@ -18,11 +25,6 @@ provider "aws" {
 resource "aws_s3_bucket" "lambda_bucket" {
   bucket        = var.lambda_bucket_name
   force_destroy = true
-}
-
-resource "aws_s3_bucket_acl" "lambda_bucket" {
-  bucket = aws_s3_bucket.lambda_bucket.id
-  acl    = "private"
 }
 
 resource "aws_s3_bucket_versioning" "lambda_bucket" {
