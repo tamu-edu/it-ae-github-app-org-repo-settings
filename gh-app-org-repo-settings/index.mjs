@@ -3,6 +3,7 @@ import {
   GetSecretValueCommand,
 } from "@aws-sdk/client-secrets-manager";
 import { App } from "octokit";
+import * as crypto from "crypto";
 
 export const handler = async (event) => {
   try {
@@ -43,10 +44,10 @@ export const handler = async (event) => {
 
         // Verify the signature
         const signature = event.headers["x-hub-signature-256"];
-        const payload = event.body;
+        // const payload = event.body;
         const secret = webhookSecret;
-        const header = "sha256=" + signature;
-        const verified = await verifySignature(secret, header, payload);
+        const verified = await verifySignature(secret, signature, event.body);
+
         if (!verified) {
           return {
             statusCode: 401,
@@ -162,28 +163,12 @@ async function verifySignature(secret, header, payload) {
   let parts = header.split("=");
   let sigHex = parts[1];
 
-  let algorithm = { name: "HMAC", hash: { name: "SHA-256" } };
+  const hash = crypto
+    .createHmac("sha256", secret)
+    .update(payload)
+    .digest("hex");
 
-  let keyBytes = encoder.encode(secret);
-  let extractable = false;
-  let key = await crypto.subtle.importKey(
-    "raw",
-    keyBytes,
-    algorithm,
-    extractable,
-    ["sign", "verify"]
-  );
-
-  let sigBytes = hexToBytes(sigHex);
-  let dataBytes = encoder.encode(payload);
-  let equal = await crypto.subtle.verify(
-    algorithm.name,
-    key,
-    sigBytes,
-    dataBytes
-  );
-
-  return equal;
+  return hash === sigHex;
 }
 
 function hexToBytes(hex) {
