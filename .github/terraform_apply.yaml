@@ -1,0 +1,44 @@
+name: Terraform apply
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "/**"
+  workflow_dispatch:
+    inputs:
+      pr_id:
+        description: "Pull Request ID"
+        required: true
+
+permissions:
+  id-token: write # This is required for requesting the JWT for AWS OIDC
+  contents: read # This is required for actions/checkout
+  pull-requests: write # This is required to post PR comments
+  issues: write # This is required to create issues
+  actions: read # This is required to download artifacts
+
+env:
+  # AWS Region to use as primary region
+  AWS_REGION: us-east-1
+  AWS_ROLE: "arn:aws:iam::802019628232:role/github-account-config"
+
+jobs:
+  terraform_apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: oidc authenticate to AWS
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          role-session-name: github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform Apply Composite Action
+        uses: tamu-edu/it-ae-actions-terraform-pr-apply@main
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          pr-id: ${{ github.event.inputs.pr_id }}
+          working-directory: terraform

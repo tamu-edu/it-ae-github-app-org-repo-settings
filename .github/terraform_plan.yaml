@@ -1,0 +1,38 @@
+name: Terraform plan
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "/**"
+
+permissions:
+  id-token: write # This is required for requesting the JWT for AWS OIDC
+  contents: read # This is required for actions/checkout
+  pull-requests: write # This is required to post PR comments
+
+env:
+  # AWS Region to use as primary region
+  AWS_REGION: us-east-2
+  AWS_ROLE: "arn:aws:iam::529455156359:role/github-account-config"
+
+jobs:
+  terraform_plan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: pwd && ls -la
+
+      - name: oidc authenticate to AWS
+        uses: aws-actions/configure-aws-credentials@v1-node16
+        with:
+          role-to-assume: ${{ env.AWS_ROLE }}
+          role-session-name: github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform plan composite action
+        uses: tamu-edu/it-ae-actions-pullrequest-tfplan@main
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          terraform-version: 1.5.7
+          working-directory: terraform
