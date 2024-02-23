@@ -44,7 +44,6 @@ export const handler = async (event) => {
 
         // Verify the signature
         const signature = event.headers["x-hub-signature-256"];
-        // const payload = event.body;
         const secret = webhookSecret;
         const verified = await verifySignature(secret, signature, event.body);
 
@@ -163,12 +162,32 @@ async function verifySignature(secret, header, payload) {
   let parts = header.split("=");
   let sigHex = parts[1];
 
-  const hash = crypto
-    .createHmac("sha256", secret)
-    .update(payload)
-    .digest("hex");
+  console.log("secret: " + secret);
+  console.log("sigHex: " + sigHex);
+  console.log("payload: " + payload);
 
-  return hash === sigHex;
+  let algorithm = { name: "HMAC", hash: { name: "SHA-256" } };
+
+  let keyBytes = encoder.encode(secret);
+  let extractable = false;
+  let key = await crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    algorithm,
+    extractable,
+    ["sign", "verify"]
+  );
+
+  let sigBytes = hexToBytes(sigHex);
+  let dataBytes = encoder.encode(payload);
+  let equal = await crypto.subtle.verify(
+    algorithm.name,
+    key,
+    sigBytes,
+    dataBytes
+  );
+
+  return equal;
 }
 
 function hexToBytes(hex) {
