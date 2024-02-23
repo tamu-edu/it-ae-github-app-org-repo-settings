@@ -52,7 +52,7 @@ export const handler = async (event) => {
             statusCode: 401,
           };
         } else {
-          console.log("Signature verified");
+          console.log("Signature verified and Github Actions works");
         }
         ////////////////////////////////////////////////
 
