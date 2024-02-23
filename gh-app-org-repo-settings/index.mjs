@@ -51,6 +51,8 @@ export const handler = async (event) => {
           return {
             statusCode: 401,
           };
+        } else {
+          console.log("Signature verified");
         }
         ////////////////////////////////////////////////
 
