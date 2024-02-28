@@ -19,7 +19,7 @@ permissions:
 env:
   # AWS Region to use as primary region
   AWS_REGION: us-east-1
-  AWS_ROLE: "arn:aws:iam::802019628232:role/github-account-config"
+  AWS_ROLE: "arn:aws:iam::529455156359:role/github-account-config"
 
 jobs:
   terraform_apply:
@@ -39,4 +39,3 @@ jobs:
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           pr-id: ${{ github.event.inputs.pr_id }}
-          working-directory: terraform
