@@ -8,10 +8,6 @@ on:
       pr_id:
         description: "Pull Request ID"
         required: true
-      skip-pr:
-        description: "Skip PR"
-        required: false
-        default: "false"
 
 permissions:
   id-token: write # This is required for requesting the JWT for AWS OIDC
@@ -44,8 +40,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Apply Composite Action
-        uses: tamu-edu/it-ae-actions-terraform-pr-apply@feature/skip-pr
+        uses: tamu-edu/it-ae-actions-terraform-pr-apply@main
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           pr-id: ${{ github.event.inputs.pr_id }}
-          skip-pr: ${{ github.event.inputs.skip-pr }}
