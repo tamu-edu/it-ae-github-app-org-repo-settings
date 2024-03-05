@@ -45,7 +45,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Terraform Apply Composite Action
-        uses: tamu-edu/it-ae-actions-terraform-pr-apply@main
+        uses: tamu-edu/it-ae-actions-terraform-pr-apply@feature/skip-pr
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           pr-id: ${{ github.event.inputs.pr_id }}
