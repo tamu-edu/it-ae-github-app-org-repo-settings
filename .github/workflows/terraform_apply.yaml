@@ -33,6 +33,7 @@ jobs:
         with:
           node-version: "20"
           cache: "npm"
+        working-directory: ./gh-app-org-repo-settings
       - name: Install npm modules
         run: npm install
         working-directory: ./gh-app-org-repo-settings
