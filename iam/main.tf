@@ -1,9 +1,9 @@
 terraform {
   backend "s3" {
-    bucket         = "terraform-state-529455156359"
+    bucket         = "gh-app-org-repo-settings"
     key            = "iam/terraform.tfstate"
-    dynamodb_table = "terraform-state-529455156359"
-    region         = "us-east-2"
+    dynamodb_table = "gh-app-org-repo-settings"
+    region         = "us-east-1"
   }
 }
 
