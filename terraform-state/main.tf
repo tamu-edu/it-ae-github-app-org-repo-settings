@@ -1,5 +1,6 @@
 module "state_backend" {
 	source = "github.com/tamu-edu/it-ae-tfmod-aws-state?ref=v0.0.2"
+	bucket_name = "gh-app-org-repo-settings"
 }
 
 output "region" {
