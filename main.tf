@@ -126,3 +126,31 @@ resource "aws_iam_role_policy_attachment" "secretsmanager" {
   role       = aws_iam_role.iam_for_lambda.name
   policy_arn = aws_iam_policy.secretsmanager.arn
 }
+
+resource "aws_secretmanager_secret" "github_app_private_key" {
+  name = "github-repo-settings/PRIVATE_KEY"
+}
+
+resource "aws_secretmanager_secret" "github_app_app_id" {
+  name = "github-repo-settings/APP_ID"
+}
+
+resource "aws_secretmanager_secret" "github_app_webhook_secret" {
+  name = "github-repo-settings/WEBHOOK_SECRET"
+}
+
+resource "aws_secretmanager_secret_version" "github_app_private_key" {
+  secret_id     = aws_secretmanager_secret.github_app_private_key.id
+  secret_string = var.github_app_private_key
+}
+
+resource "aws_secretmanager_secret_version" "github_app_app_id" {
+  secret_id     = aws_secretmanager_secret.github_app_app_id.id
+  secret_string = var.github_app_app_id
+}
+
+resource "aws_secretmanager_secret_version" "github_app_webhook_secret" {
+  secret_id     = aws_secretmanager_secret.github_app_webhook_secret.id
+  secret_string = var.github_app_webhook_secret
+}
+

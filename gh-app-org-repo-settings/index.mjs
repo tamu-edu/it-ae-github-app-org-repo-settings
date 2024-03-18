@@ -21,21 +21,21 @@ export const handler = async (event) => {
 
         response = await client.send(
           new GetSecretValueCommand({
-            SecretId: "test/github-repo-settings/PRIVATE_KEY",
+            SecretId: "github-repo-settings/PRIVATE_KEY",
             VersionStage: "AWSCURRENT",
           })
         );
         const privateKey = response.SecretString;
         response = await client.send(
           new GetSecretValueCommand({
-            SecretId: "test/github-repo-settings/APP_ID",
+            SecretId: "github-repo-settings/APP_ID",
             VersionStage: "AWSCURRENT",
           })
         );
         const appId = response.SecretString;
         response = await client.send(
           new GetSecretValueCommand({
-            SecretId: "test/github-repo-settings/WEBHOOK_SECRET",
+            SecretId: "github-repo-settings/WEBHOOK_SECRET",
             VersionStage: "AWSCURRENT",
           })
         );
