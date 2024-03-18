@@ -25,6 +25,7 @@ variable "lambda_iam_role_name" {
 variable "github_app_private_key" {
   type        = string
   description = "Private key for the github app"
+  sensitive   = true
 }
 
 variable "github_app_app_id" {
@@ -35,4 +36,5 @@ variable "github_app_app_id" {
 variable "github_app_webhook_secret" {
   type        = string
   description = "Webhook secret for the github event webhook"
+  sensitive   = true
 }
