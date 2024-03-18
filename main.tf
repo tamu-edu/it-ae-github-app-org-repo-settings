@@ -11,10 +11,10 @@ terraform {
   }
 
   backend "s3" {
-    bucket         = "terraform-state-529455156359"
-    key            = "terraform.tfstate"
-    dynamodb_table = "terraform-state-529455156359"
-    region         = "us-east-2"
+    bucket         = "gh-app-org-repo-settings"
+    key            = "terraform-state/gh-app-org-repo-settings.tfstate"
+    dynamodb_table = "gh-app-org-repo-settings"
+    region         = "us-east-1"
   }
 }
 
