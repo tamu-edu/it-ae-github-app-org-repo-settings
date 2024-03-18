@@ -27,12 +27,12 @@ variable "github_app_private_key" {
   description = "Private key for the github app"
 }
 
-variable "github_app_app_id {
+variable "github_app_app_id" {
   type        = string
   description = "App ID for the github app"
 }
 
-variable "github_app_webhook_secret {
+variable "github_app_webhook_secret" {
   type        = string
   description = "Webhook secret for the github event webhook"
 }
