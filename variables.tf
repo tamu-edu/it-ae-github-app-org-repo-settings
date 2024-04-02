@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "lambda_bucket_name" {
   description = "name of the S3 bucket to store lambda code"
 
-  default = "gh-app-org-repo-settings-bucket"
+  default = "gh-app-lamba-code-bucket"
 }
 
 variable "lambda_function_name" {
