@@ -12,7 +12,7 @@ permissions:
 env:
   # AWS Region to use as primary region
   AWS_REGION: us-east-2
-  AWS_ROLE: "arn:aws:iam::529455156359:role/github-account-config"
+  AWS_ROLE: "arn:aws:iam::851725390060:role/github-app-org-repo-settings-iam-role"
 
 jobs:
   terraform_plan:
