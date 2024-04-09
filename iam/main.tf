@@ -10,7 +10,7 @@ terraform {
 module "github_oidc" {
   source = "github.com/tamu-edu/it-ae-tfmod-github-oidc?ref=v1.0.0"
 
-  name     = "github-account-config"
+  name     = "github-app-org-repo-settings-iam-role"
   subjects = ["repo:tamu-edu/it-ae-github-app-org-repo-settings:*"]
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/AdministratorAccess"
