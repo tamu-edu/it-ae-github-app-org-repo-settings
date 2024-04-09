@@ -46,5 +46,5 @@ jobs:
           pr-id: ${{ github.event.inputs.pr_id }}
         env:
           TF_VAR_github_app_private_key: ${{ secrets.TF_VAR_github_app_private_key }}
-          TF_VAR_github_app_id: ${{ secrets.TF_VAR_github_app_id }}
+          TF_VAR_github_app_app_id: ${{ secrets.TF_VAR_github_app_app_id }}
           TF_VAR_github_app_webhook_secret: ${{ secrets.TF_VAR_github_app_webhook_secret }}
