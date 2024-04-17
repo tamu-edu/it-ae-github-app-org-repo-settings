@@ -10,7 +10,10 @@ export const handler = async (event) => {
     console.log(event);
 
     const githubEvent = event.headers["x-github-event"];
-    if (githubEvent === "repository") {
+    if (
+      githubEvent === "repository" ||
+      githubEvent === "installation_repositories"
+    ) {
       const data = JSON.parse(event.body);
       if (data.action === "created") {
         // Retrieve the secrets from AWS Secrets Manager
