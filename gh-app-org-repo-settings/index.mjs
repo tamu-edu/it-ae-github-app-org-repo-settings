@@ -15,7 +15,7 @@ export const handler = async (event) => {
       githubEvent === "installation_repositories"
     ) {
       const data = JSON.parse(event.body);
-      if (data.action === "created") {
+      if (data.action === "created" || data.action === "added") {
         // Retrieve the secrets from AWS Secrets Manager
         const client = new SecretsManagerClient({
           region: "us-east-2",
