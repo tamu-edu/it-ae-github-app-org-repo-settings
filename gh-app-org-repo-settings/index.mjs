@@ -48,8 +48,10 @@ export const handler = async (event) => {
         const verified = await verifySignature(secret, signature, event.body);
 
         if (!verified) {
+          console.log("Signature not verified");
           return {
             statusCode: 401,
+            body: JSON.stringify({ message: "Signature not verified" }),
           };
         } else {
           console.log("Signature verified");
@@ -103,8 +105,30 @@ export const handler = async (event) => {
           return {
             statusCode: 201,
           };
+        } else {
+          console.log("No template exists for this repo name");
+          return {
+            statusCode: 304,
+            body: JSON.stringify({
+              message: "No template exists for this repo name",
+            }),
+          };
         }
+      } else {
+        console.log("Repository action is not 'created'");
+        return {
+          statusCode: 304,
+          body: JSON.stringify({
+            message: "Repository action is not 'created'",
+          }),
+        };
       }
+    } else {
+      console.log("Not a repository event");
+      return {
+        statusCode: 304,
+        body: JSON.stringify({ message: "Not a repository event" }),
+      };
     }
 
     return {
